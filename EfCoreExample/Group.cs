@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EfCoreExample;
 
-public class Group
+public partial class Group
 {
     public int Id { get; set; }
-    public string GroupTitle { get; set; }
+
+    public string Title { get; set; } = null!;
+
+    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }
