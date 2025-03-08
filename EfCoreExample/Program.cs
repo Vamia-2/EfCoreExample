@@ -140,22 +140,25 @@ string connectionString = "Data Source=DESKTOP-MTDDLEC;Initial Catalog=Database1
 Scaffold-DbContext 'Data Source=DESKTOP-MTDDLEC;Initial Catalog=Database1;Integrated Security=True;Persist Security Info=False;Pooling=False;Multiple Active Result Sets=False;Connect Timeout=60;Encrypt=True;Trust Server Certificate=True;Command Timeout=0' Microsoft.EntityFrameworkCore.SqlServer-project EfCoreExample
 
  */
-//using (var context = new Database1Context())
+using (var context = new Database1Context())
+{
+    var students = context.Students.ToList();
+    students.ForEach(x => Console.WriteLine($"{x.Id} {x.LastName} {x.FirstName} {x.Birthday} curs:{x.Course} {x.GroupId}"));
+}
+
+//INSERT
+//using(var context = new Database1Context())
 //{
-//    var students = context.Students.ToList();
-//    students.ForEach(x => Console.WriteLine($"{x.Id} {x.LastName} {x.FirstName} {x.Birthday} curs:{x.Course} {x.GroupId}"));
+//    var student = new Student
+//    {
+//        FirstName = "Ivan",
+//        LastName = "Ivanov",
+//        Birthday = new DateOnly(1995, 12, 3),
+//        Course = 1,
+//        GroupId = 1
+//    };
+//    context.Students.Add(student);
+//    context.SaveChanges();
 //}
 
-using(var context = new Database1Context())
-{
-    var student = new Student
-    {
-        FirstName = "Ivan",
-        LastName = "Ivanov",
-        Birthday = new DateOnly(1995, 12, 3),
-        Course = 1,
-        GroupId = 3
-    };
-    context.Students.Add(student);
-    context.SaveChanges();
-}
+//UPDATE
