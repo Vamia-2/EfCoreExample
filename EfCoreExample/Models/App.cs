@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,11 +57,27 @@ public class App
                     Console.WriteLine("Add subject to group");
                     AddSubjectToGroup();
                     break;
-                case "10":
+                case "9":
                     Console.WriteLine("Remove subject from group");
                     RemoveSubjectFromGroup();
                     break;
-                case "9":
+                case "10":
+                    Console.WriteLine("Add or update subject");
+                    RemoveSubjectFromGroup();
+                    break;
+                case "11":
+                    Console.WriteLine("Add grade");
+                    RemoveSubjectFromGroup();
+                    break;
+                case "12":
+                    Console.WriteLine("Show student grades");
+                    RemoveSubjectFromGroup();
+                    break;
+                case "13":
+                    Console.WriteLine("Show student average grades");
+                    RemoveSubjectFromGroup();
+                    break;
+                case "14":
                     Console.WriteLine("Exit");
                     return;
             }
@@ -252,6 +269,105 @@ public class App
 
     }
 
+    private void AddOrUpdateSubject()
+    {
+        Console.WriteLine("Enter subject ID (or leave empty to add a new subject): ");
+        string input = Console.ReadLine();
+        Subject subject;
+
+        if (int.TryParse(input, out int subjectId))
+        {
+            subject = context.Subjects.FirstOrDefault(s=> s.Id = subjectId);
+            if (subject == null)
+            {
+                Console.WriteLine("Subject not found");
+                return;
+            }
+            Console.WriteLine("Enter new subject title: ");
+            subject.Title = Console.ReadLine();
+        }
+        else
+        {
+            subject = new Subject();
+            Console.WriteLine("Enter subject title: ");
+            subject.Title = Console.ReadLine();
+            context.Subjects.Add(subject);
+        }
+
+        context.SaveChanges();
+        Console.WriteLine("Subject saved");
+    }
+
+    private void AddGrade()
+    {
+        ShowStudents();
+        Console.WriteLine("Enter student ID: ");
+        int studentId = int.Parse(Console.ReadLine());
+        var student = context.Students.Find(studentId);
+        if (student == null)
+        {
+            Console.WriteLine("Student not found");
+            return;
+        }
+        var subjects = context.Subjects.ToList();
+        Console.WriteLine("Subjects:");
+        foreach (var subject in subjects)
+        {
+            Console.WriteLine($"{subject.Id} {subject.Title}");
+        }
+        Console.WriteLine("Enter subject ID: ");
+        int subjectId = int.Parse(Console.ReadLine());
+        Console.WriteLine("Enter grade (1-12): ");
+        int grade = int.Parse(Console.ReadLine());
+        Console.WriteLine("Enter date (YYYY-MM-DD): ");
+        DateOnly date = DateOnly.FromDateTime(DateTime.Parse(Console.ReadLine()));
+        var studentGrade = new Grade { StudentId = studentId, SubjectId = subjectId, Value = grade, Date = date };
+        context.Grades.Add(studentGrade);
+        context.SaveChanges();
+        Console.WriteLine("Grade added");
+    }
+
+    private void ShowStudentGrades()
+    {
+        ShowStudents();
+        Console.WriteLine("Enter student ID: ");
+        int studentId = int.Parse(Console.ReadLine());
+        var grades = context.Grades.Include(g => g.Subject)
+                                   .Where(g => g.StudentId == studentId)
+                                   .OrderBy(g => g.Date)
+                                   .ToList();
+        if (!grades.Any())
+        {
+            Console.WriteLine("No grades found");
+            return;
+        }
+        foreach (var grade in grades)
+        {
+            Console.WriteLine($"{grade.Date} {grade.Subject.Title} {grade.Value}");
+        }
+    }
+
+    private void ShowStudentAverageGrades()
+    {
+        ShowStudents();
+        Console.WriteLine("Enter student ID: ");
+        int studentId = int.Parse(Console.ReadLine());
+        var averageGrades = context.Grades
+            .Where(g => g.StudentId == studentId)
+            .GroupBy(g => g.Subject.Title)
+            .Select(g => new { Subject = g.Key, Average = g.Average(x => x.Value) })
+            .ToList();
+        if (!averageGrades.Any())
+        {
+            Console.WriteLine("No grades found");
+            return;
+        }
+        foreach (var grade in averageGrades)
+        {
+            Console.WriteLine($"{grade.Subject}: {grade.Average:F2}");
+        }
+    }
+
     private void ShowMenu()
     {
         Console.WriteLine("--------------------------");
@@ -263,8 +379,12 @@ public class App
         Console.WriteLine("6. Search students");
         Console.WriteLine("7. Show stats");
         Console.WriteLine("8. Add subject to group");
-        Console.WriteLine("10. Remove subject from group");
-        Console.WriteLine("9. Exit");
+        Console.WriteLine("9. Remove subject from group");
+        Console.WriteLine("10. Add or update subject");
+        Console.WriteLine("11. Add grade");
+        Console.WriteLine("12. Show student grades");
+        Console.WriteLine("13. Show student average grades");
+        Console.WriteLine("14. Exit");
         Console.WriteLine("--------------------------");
     }
 

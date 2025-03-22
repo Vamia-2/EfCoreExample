@@ -20,4 +20,5 @@ public partial class Student
     public int GroupId { get; set; }
 
     public virtual Group Group { get; set; } = null!;
+
 }
